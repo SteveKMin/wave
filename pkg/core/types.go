@@ -17,6 +17,8 @@ limitations under the License.
 package core
 
 import (
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -50,4 +52,28 @@ type configObject struct {
 	required bool
 	allKeys  bool
 	keys     map[string]struct{}
+}
+
+type PodController interface {
+	runtime.Object
+	metav1.Object
+	GetPodTemplate() *corev1.PodTemplateSpec
+	SetPodTemplate(*corev1.PodTemplateSpec)
+	DeepCopy() PodController
+}
+
+type Deployment struct {
+	*appsv1.Deployment
+}
+
+func (d *Deployment) GetPodTemplate() *corev1.PodTemplateSpec {
+	return &d.Deployment.Spec.Template
+}
+
+func (d *Deployment) SetPodTemplate(template *corev1.PodTemplateSpec) {
+	d.Deployment.Spec.Template = *template
+}
+
+func (d *Deployment) DeepCopy() PodController {
+	return &Deployment{d.Deployment.DeepCopy()}
 }

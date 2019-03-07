@@ -40,6 +40,7 @@ var _ = Describe("Wave controller Suite", func() {
 	var m utils.Matcher
 
 	var deployment *appsv1.Deployment
+	var podControllerDeployment PodController
 	var mgrStopped *sync.WaitGroup
 	var stopMgr chan struct{}
 
@@ -85,10 +86,11 @@ var _ = Describe("Wave controller Suite", func() {
 		m.Get(s3, timeout).Should(Succeed())
 
 		deployment = utils.ExampleDeployment.DeepCopy()
+		podControllerDeployment = &Deployment{deployment}
 
 		// Create a deployment and wait for it to be reconciled
 		m.Create(deployment).Should(Succeed())
-		_, err = h.HandleDeployment(deployment)
+		_, err = h.HandlePodController(podControllerDeployment)
 		Expect(err).NotTo(HaveOccurred())
 
 		m.Get(deployment).Should(Succeed())
@@ -147,7 +149,7 @@ var _ = Describe("Wave controller Suite", func() {
 				deployment.SetAnnotations(annotations)
 
 				m.Update(deployment).Should(Succeed())
-				_, err := h.HandleDeployment(deployment)
+				_, err := h.HandlePodController(podControllerDeployment)
 				Expect(err).NotTo(HaveOccurred())
 
 				// Get the updated Deployment
@@ -192,7 +194,7 @@ var _ = Describe("Wave controller Suite", func() {
 					Expect(containers[0].Name).To(Equal("container1"))
 					deployment.Spec.Template.Spec.Containers = []corev1.Container{containers[0]}
 					m.Update(deployment).Should(Succeed())
-					_, err := h.HandleDeployment(deployment)
+					_, err := h.HandlePodController(podControllerDeployment)
 					Expect(err).NotTo(HaveOccurred())
 
 					// Get the updated Deployment
@@ -226,7 +228,7 @@ var _ = Describe("Wave controller Suite", func() {
 						cm1.Data["key1"] = "modified"
 						m.Update(cm1).Should(Succeed())
 
-						_, err := h.HandleDeployment(deployment)
+						_, err := h.HandlePodController(podControllerDeployment)
 						Expect(err).NotTo(HaveOccurred())
 
 						// Get the updated Deployment
@@ -244,7 +246,7 @@ var _ = Describe("Wave controller Suite", func() {
 						cm2.Data["key1"] = "modified"
 						m.Update(cm2).Should(Succeed())
 
-						_, err := h.HandleDeployment(deployment)
+						_, err := h.HandlePodController(podControllerDeployment)
 						Expect(err).NotTo(HaveOccurred())
 
 						// Get the updated Deployment
@@ -262,7 +264,7 @@ var _ = Describe("Wave controller Suite", func() {
 						cm3.Data["key1"] = "modified"
 						m.Update(cm3).Should(Succeed())
 
-						_, err := h.HandleDeployment(deployment)
+						_, err := h.HandlePodController(podControllerDeployment)
 						Expect(err).NotTo(HaveOccurred())
 
 						// Get the updated Deployment
@@ -280,7 +282,7 @@ var _ = Describe("Wave controller Suite", func() {
 						cm3.Data["key3"] = "modified"
 						m.Update(cm3).Should(Succeed())
 
-						_, err := h.HandleDeployment(deployment)
+						_, err := h.HandlePodController(podControllerDeployment)
 						Expect(err).NotTo(HaveOccurred())
 
 						// Get the updated Deployment
@@ -301,7 +303,7 @@ var _ = Describe("Wave controller Suite", func() {
 						s1.StringData["key1"] = "modified"
 						m.Update(s1).Should(Succeed())
 
-						_, err := h.HandleDeployment(deployment)
+						_, err := h.HandlePodController(podControllerDeployment)
 						Expect(err).NotTo(HaveOccurred())
 
 						// Get the updated Deployment
@@ -322,7 +324,7 @@ var _ = Describe("Wave controller Suite", func() {
 						s2.StringData["key1"] = "modified"
 						m.Update(s2).Should(Succeed())
 
-						_, err := h.HandleDeployment(deployment)
+						_, err := h.HandlePodController(podControllerDeployment)
 						Expect(err).NotTo(HaveOccurred())
 
 						// Get the updated Deployment
@@ -343,7 +345,7 @@ var _ = Describe("Wave controller Suite", func() {
 						s3.StringData["key1"] = "modified"
 						m.Update(s3).Should(Succeed())
 
-						_, err := h.HandleDeployment(deployment)
+						_, err := h.HandlePodController(podControllerDeployment)
 						Expect(err).NotTo(HaveOccurred())
 
 						// Get the updated Deployment
@@ -364,7 +366,7 @@ var _ = Describe("Wave controller Suite", func() {
 						s3.StringData["key3"] = "modified"
 						m.Update(s3).Should(Succeed())
 
-						_, err := h.HandleDeployment(deployment)
+						_, err := h.HandlePodController(podControllerDeployment)
 						Expect(err).NotTo(HaveOccurred())
 
 						// Get the updated Deployment
@@ -385,7 +387,7 @@ var _ = Describe("Wave controller Suite", func() {
 					m.Get(deployment, timeout).Should(Succeed())
 					deployment.SetAnnotations(make(map[string]string))
 					m.Update(deployment).Should(Succeed())
-					_, err := h.HandleDeployment(deployment)
+					_, err := h.HandlePodController(podControllerDeployment)
 					Expect(err).NotTo(HaveOccurred())
 
 					m.Eventually(deployment, timeout).ShouldNot(utils.WithAnnotations(HaveKey(RequiredAnnotation)))
@@ -409,7 +411,7 @@ var _ = Describe("Wave controller Suite", func() {
 
 					m.Delete(deployment).Should(Succeed())
 					m.Eventually(deployment, timeout).ShouldNot(utils.WithDeletionTimestamp(BeNil()))
-					_, err := h.HandleDeployment(deployment)
+					_, err := h.HandlePodController(podControllerDeployment)
 					Expect(err).NotTo(HaveOccurred())
 				})
 				It("Removes the OwnerReference from the all children", func() {

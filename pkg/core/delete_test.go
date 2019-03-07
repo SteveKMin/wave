@@ -39,6 +39,7 @@ var _ = Describe("Wave owner references Suite", func() {
 	var h *Handler
 	var m utils.Matcher
 	var deployment *appsv1.Deployment
+	var podControllerDeployment PodController
 	var mgrStopped *sync.WaitGroup
 	var stopMgr chan struct{}
 
@@ -60,6 +61,8 @@ var _ = Describe("Wave owner references Suite", func() {
 		m.Create(utils.ExampleSecret2.DeepCopy()).Should(Succeed())
 
 		deployment = utils.ExampleDeployment.DeepCopy()
+		podControllerDeployment = &Deployment{deployment}
+
 		m.Create(deployment).Should(Succeed())
 
 		ownerRef = utils.GetOwnerRef(deployment)
@@ -102,7 +105,7 @@ var _ = Describe("Wave owner references Suite", func() {
 			deployment.SetFinalizers(f)
 			m.Update(deployment).Should(Succeed())
 
-			_, err := h.handleDelete(deployment)
+			_, err := h.handleDelete(podControllerDeployment)
 			Expect(err).NotTo(HaveOccurred())
 		})
 

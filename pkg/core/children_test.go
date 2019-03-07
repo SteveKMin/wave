@@ -35,6 +35,7 @@ var _ = Describe("Wave children Suite", func() {
 	var h *Handler
 	var m utils.Matcher
 	var deployment *appsv1.Deployment
+	var podControllerDeployment PodController
 	var existingChildren []Object
 	var currentChildren []configObject
 	var mgrStopped *sync.WaitGroup
@@ -78,6 +79,8 @@ var _ = Describe("Wave children Suite", func() {
 		m.Create(s4).Should(Succeed())
 
 		deployment = utils.ExampleDeployment.DeepCopy()
+		podControllerDeployment = &Deployment{deployment}
+
 		m.Create(deployment).Should(Succeed())
 
 		stopMgr, mgrStopped = StartTestManager(mgr)
@@ -108,7 +111,7 @@ var _ = Describe("Wave children Suite", func() {
 	Context("getCurrentChildren", func() {
 		BeforeEach(func() {
 			var err error
-			currentChildren, err = h.getCurrentChildren(deployment)
+			currentChildren, err = h.getCurrentChildren(podControllerDeployment)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -195,7 +198,7 @@ var _ = Describe("Wave children Suite", func() {
 			m.Delete(s2).Should(Succeed())
 			m.Get(s2, timeout).ShouldNot(Succeed())
 
-			current, err := h.getCurrentChildren(deployment)
+			current, err := h.getCurrentChildren(podControllerDeployment)
 			Expect(err).To(HaveOccurred())
 			Expect(current).To(BeEmpty())
 		})
@@ -206,7 +209,7 @@ var _ = Describe("Wave children Suite", func() {
 		var secrets map[string]configMetadata
 
 		BeforeEach(func() {
-			configMaps, secrets = getChildNamesByType(deployment)
+			configMaps, secrets = getChildNamesByType(podControllerDeployment)
 		})
 
 		It("returns ConfigMaps referenced in Volumes", func() {
@@ -268,7 +271,7 @@ var _ = Describe("Wave children Suite", func() {
 			}
 
 			var err error
-			existingChildren, err = h.getExistingChildren(deployment)
+			existingChildren, err = h.getExistingChildren(podControllerDeployment)
 			Expect(err).NotTo(HaveOccurred())
 		})
 

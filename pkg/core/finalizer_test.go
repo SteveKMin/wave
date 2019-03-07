@@ -25,14 +25,16 @@ import (
 
 var _ = Describe("Wave finalizer Suite", func() {
 	var deployment *appsv1.Deployment
+	var podControllerDeployment PodController
 
 	BeforeEach(func() {
 		deployment = utils.ExampleDeployment.DeepCopy()
+		podControllerDeployment = &Deployment{deployment}
 	})
 
 	Context("addFinalizer", func() {
 		It("adds the wave finalizer to the deployment", func() {
-			addFinalizer(deployment)
+			addFinalizer(podControllerDeployment)
 
 			Expect(deployment.GetFinalizers()).To(ContainElement(FinalizerString))
 		})
@@ -41,7 +43,7 @@ var _ = Describe("Wave finalizer Suite", func() {
 			f := deployment.GetFinalizers()
 			f = append(f, "kubernetes")
 			deployment.SetFinalizers(f)
-			addFinalizer(deployment)
+			addFinalizer(podControllerDeployment)
 
 			Expect(deployment.GetFinalizers()).To(ContainElement("kubernetes"))
 		})
@@ -52,7 +54,7 @@ var _ = Describe("Wave finalizer Suite", func() {
 			f := deployment.GetFinalizers()
 			f = append(f, FinalizerString)
 			deployment.SetFinalizers(f)
-			removeFinalizer(deployment)
+			removeFinalizer(podControllerDeployment)
 
 			Expect(deployment.GetFinalizers()).NotTo(ContainElement(FinalizerString))
 		})
@@ -61,7 +63,7 @@ var _ = Describe("Wave finalizer Suite", func() {
 			f := deployment.GetFinalizers()
 			f = append(f, "kubernetes")
 			deployment.SetFinalizers(f)
-			removeFinalizer(deployment)
+			removeFinalizer(podControllerDeployment)
 
 			Expect(deployment.GetFinalizers()).To(ContainElement("kubernetes"))
 		})
@@ -73,18 +75,18 @@ var _ = Describe("Wave finalizer Suite", func() {
 			f = append(f, FinalizerString)
 			deployment.SetFinalizers(f)
 
-			Expect(hasFinalizer(deployment)).To(BeTrue())
+			Expect(hasFinalizer(podControllerDeployment)).To(BeTrue())
 		})
 
 		It("returns false if the deployment doesn't have the finalizer", func() {
 			// Test without any finalizers
-			Expect(hasFinalizer(deployment)).To(BeFalse())
+			Expect(hasFinalizer(podControllerDeployment)).To(BeFalse())
 
 			// Test with a different finalizer
 			f := deployment.GetFinalizers()
 			f = append(f, "kubernetes")
 			deployment.SetFinalizers(f)
-			Expect(hasFinalizer(deployment)).To(BeFalse())
+			Expect(hasFinalizer(podControllerDeployment)).To(BeFalse())
 		})
 	})
 })
