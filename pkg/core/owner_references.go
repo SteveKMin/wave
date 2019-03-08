@@ -28,7 +28,7 @@ import (
 
 // removeOwnerReferences iterates over a list of children and removes the owner
 // reference from the child before updating it
-func (h *Handler) removeOwnerReferences(obj PodController, children []Object) error {
+func (h *Handler) removeOwnerReferences(obj podController, children []Object) error {
 	for _, child := range children {
 		// Filter the existing ownerReferences
 		ownerRefs := []metav1.OwnerReference{}
@@ -54,7 +54,7 @@ func (h *Handler) removeOwnerReferences(obj PodController, children []Object) er
 // updateOwnerReferences determines which children need to have their
 // OwnerReferences added/updated and which need to have their OwnerReferences
 // removed and then performs all updates
-func (h *Handler) updateOwnerReferences(owner PodController, existing []Object, current []configObject) error {
+func (h *Handler) updateOwnerReferences(owner podController, existing []Object, current []configObject) error {
 	// Add an owner reference to each child object
 	errChan := make(chan error)
 	for _, obj := range current {
@@ -87,7 +87,7 @@ func (h *Handler) updateOwnerReferences(owner PodController, existing []Object, 
 
 // updateOwnerReference ensures that the child object has an OwnerReference
 // pointing to the owner
-func (h *Handler) updateOwnerReference(owner PodController, child Object) error {
+func (h *Handler) updateOwnerReference(owner podController, child Object) error {
 	ownerRef := getOwnerReference(owner)
 	for _, ref := range child.GetOwnerReferences() {
 		// Owner Reference already exists, do nothing
@@ -120,7 +120,7 @@ func getOrphans(existing []Object, current []configObject) []Object {
 }
 
 // getOwnerReference constructs an OwnerReference pointing to the object given
-func getOwnerReference(obj PodController) metav1.OwnerReference {
+func getOwnerReference(obj podController) metav1.OwnerReference {
 	t := true
 	f := false
 	return metav1.OwnerReference{

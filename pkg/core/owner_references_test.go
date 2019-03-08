@@ -35,7 +35,7 @@ var _ = Describe("Wave owner references Suite", func() {
 	var h *Handler
 	var m utils.Matcher
 	var deployment *appsv1.Deployment
-	var podControllerDeployment PodController
+	var podControllerDeployment podController
 	var mgrStopped *sync.WaitGroup
 	var stopMgr chan struct{}
 

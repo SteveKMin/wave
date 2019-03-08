@@ -27,7 +27,7 @@ import (
 
 // handleDelete removes all existing Owner References pointing to the object
 // before removing the object's Finalizer
-func (h *Handler) handleDelete(obj PodController) (reconcile.Result, error) {
+func (h *Handler) handleDelete(obj podController) (reconcile.Result, error) {
 	// Fetch all children with an OwnerReference pointing to the object
 	existing, err := h.getExistingChildren(obj)
 	if err != nil {

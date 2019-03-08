@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/pusher/wave/pkg/core"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/record"
@@ -42,11 +41,11 @@ func NewHandler(c client.Client, r record.EventRecorder) *Handler {
 }
 
 func (h *Handler) HandleDeployment(instance *appsv1.Deployment) (reconcile.Result, error) {
-	return h.HandlePodController(&core.Deployment{Deployment: instance})
+	return h.HandlePodController(&Deployment{Deployment: instance})
 }
 
 // HandlePodController is called by the deployment controller
-func (h *Handler) HandlePodController(instance PodController) (reconcile.Result, error) {
+func (h *Handler) HandlePodController(instance podController) (reconcile.Result, error) {
 	log := logf.Log.WithName("wave")
 
 	// If the required annotation isn't present, ignore the instance

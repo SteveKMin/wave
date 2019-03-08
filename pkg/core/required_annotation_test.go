@@ -25,7 +25,7 @@ import (
 
 var _ = Describe("Wave required annotation Suite", func() {
 	var deployment *appsv1.Deployment
-	var podControllerDeployment PodController
+	var podControllerDeployment podController
 
 	BeforeEach(func() {
 		deployment = utils.ExampleDeployment.DeepCopy()

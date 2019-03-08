@@ -97,7 +97,7 @@ func getSecretData(child configObject) map[string][]byte {
 
 // setConfigHash upates the configuration hash of the given Deployment to the
 // given string
-func setConfigHash(obj PodController, hash string) {
+func setConfigHash(obj podController, hash string) {
 	// Get the existing annotations
 	podTemplate := obj.GetPodTemplate()
 	annotations := podTemplate.GetAnnotations()
