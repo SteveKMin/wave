@@ -35,7 +35,7 @@ var _ = Describe("Wave children Suite", func() {
 	var h *Handler
 	var m utils.Matcher
 	var deployment *appsv1.Deployment
-	var podControllerDeployment PodController
+	var podControllerDeployment podController
 	var existingChildren []Object
 	var currentChildren []configObject
 	var mgrStopped *sync.WaitGroup

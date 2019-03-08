@@ -40,7 +40,7 @@ var _ = Describe("Wave controller Suite", func() {
 	var m utils.Matcher
 
 	var deployment *appsv1.Deployment
-	var podControllerDeployment PodController
+	var podControllerDeployment podController
 	var mgrStopped *sync.WaitGroup
 	var stopMgr chan struct{}
 

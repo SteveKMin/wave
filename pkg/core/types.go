@@ -54,12 +54,12 @@ type configObject struct {
 	keys     map[string]struct{}
 }
 
-type PodController interface {
+type podController interface {
 	runtime.Object
 	metav1.Object
 	GetPodTemplate() *corev1.PodTemplateSpec
 	SetPodTemplate(*corev1.PodTemplateSpec)
-	DeepCopy() PodController
+	DeepCopy() podController
 }
 
 type Deployment struct {
@@ -74,6 +74,6 @@ func (d *Deployment) SetPodTemplate(template *corev1.PodTemplateSpec) {
 	d.Deployment.Spec.Template = *template
 }
 
-func (d *Deployment) DeepCopy() PodController {
+func (d *Deployment) DeepCopy() podController {
 	return &Deployment{d.Deployment.DeepCopy()}
 }

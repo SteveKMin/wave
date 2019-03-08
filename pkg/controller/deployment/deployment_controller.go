@@ -107,8 +107,5 @@ func (r *ReconcileDeployment) Reconcile(request reconcile.Request) (reconcile.Re
 		return reconcile.Result{}, err
 	}
 
-	// Create a new PodController with the fetched deployment instance
-	podControllerInstance := &core.Deployment{Deployment: instance}
-
-	return r.handler.HandlePodController(podControllerInstance)
+	return r.handler.HandleDeployment(instance)
 }
