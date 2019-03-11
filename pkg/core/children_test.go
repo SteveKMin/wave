@@ -261,7 +261,7 @@ var _ = Describe("Wave children Suite", func() {
 	Context("getExistingChildren", func() {
 		BeforeEach(func() {
 			m.Get(deployment, timeout).Should(Succeed())
-			ownerRef := utils.GetOwnerRef(deployment)
+			ownerRef := utils.GetOwnerRefDeployment(deployment)
 
 			for _, obj := range []Object{cm1, s1} {
 				m.Get(obj, timeout).Should(Succeed())
@@ -304,7 +304,7 @@ var _ = Describe("Wave children Suite", func() {
 		var ownerRef metav1.OwnerReference
 		BeforeEach(func() {
 			m.Get(deployment, timeout).Should(Succeed())
-			ownerRef = utils.GetOwnerRef(deployment)
+			ownerRef = utils.GetOwnerRefDeployment(deployment)
 		})
 
 		It("returns true when the child has a single owner reference pointing to the owner", func() {

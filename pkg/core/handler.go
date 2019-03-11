@@ -44,7 +44,11 @@ func (h *Handler) HandleDeployment(instance *appsv1.Deployment) (reconcile.Resul
 	return h.HandlePodController(&Deployment{Deployment: instance})
 }
 
-// HandlePodController is called by the deployment controller
+func (h *Handler) HandleStatefulSet(instance *appsv1.StatefulSet) (reconcile.Result, error) {
+	return h.HandlePodController(&StatefulSet{StatefulSet: instance})
+}
+
+// HandlePodController is called by the controllers
 func (h *Handler) HandlePodController(instance podController) (reconcile.Result, error) {
 	log := logf.Log.WithName("wave")
 

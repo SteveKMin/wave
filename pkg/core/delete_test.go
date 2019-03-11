@@ -65,7 +65,7 @@ var _ = Describe("Wave owner references Suite", func() {
 
 		m.Create(deployment).Should(Succeed())
 
-		ownerRef = utils.GetOwnerRef(deployment)
+		ownerRef = utils.GetOwnerRefDeployment(deployment)
 
 		stopMgr, mgrStopped = StartTestManager(mgr)
 		m.Get(deployment, timeout).Should(Succeed())

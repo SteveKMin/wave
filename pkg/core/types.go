@@ -77,3 +77,19 @@ func (d *Deployment) SetPodTemplate(template *corev1.PodTemplateSpec) {
 func (d *Deployment) DeepCopy() podController {
 	return &Deployment{d.Deployment.DeepCopy()}
 }
+
+type StatefulSet struct {
+	*appsv1.StatefulSet
+}
+
+func (d *StatefulSet) GetPodTemplate() *corev1.PodTemplateSpec {
+	return &d.StatefulSet.Spec.Template
+}
+
+func (d *StatefulSet) SetPodTemplate(template *corev1.PodTemplateSpec) {
+	d.StatefulSet.Spec.Template = *template
+}
+
+func (d *StatefulSet) DeepCopy() podController {
+	return &StatefulSet{d.StatefulSet.DeepCopy()}
+}
