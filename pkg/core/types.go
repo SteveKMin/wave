@@ -57,6 +57,7 @@ type configObject struct {
 type podController interface {
 	runtime.Object
 	metav1.Object
+	GetObject() runtime.Object
 	GetPodTemplate() *corev1.PodTemplateSpec
 	SetPodTemplate(*corev1.PodTemplateSpec)
 	DeepCopy() podController
@@ -64,6 +65,10 @@ type podController interface {
 
 type Deployment struct {
 	*appsv1.Deployment
+}
+
+func (d *Deployment) GetObject() runtime.Object {
+	return d.Deployment
 }
 
 func (d *Deployment) GetPodTemplate() *corev1.PodTemplateSpec {
