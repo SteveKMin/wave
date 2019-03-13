@@ -95,8 +95,8 @@ func (h *Handler) HandlePodController(instance podController) (reconcile.Result,
 	// If the desired state doesn't match the existing state, update it
 	if !reflect.DeepEqual(instance, copy) {
 		log.V(0).Info("Updating instance hash", "namespace", instance.GetNamespace(), "name", instance.GetName(), "hash", hash)
-		h.recorder.Eventf(copy, corev1.EventTypeNormal, "ConfigChanged", "Configuration hash updated to %s", hash)
-		err := h.Update(context.TODO(), copy)
+		h.recorder.Eventf(copy.GetObject(), corev1.EventTypeNormal, "ConfigChanged", "Configuration hash updated to %s", hash)
+		err := h.Update(context.TODO(), copy.GetObject())
 		if err != nil {
 			return reconcile.Result{}, fmt.Errorf("error updating instance %s/%s: %v", instance.GetNamespace(), instance.GetName(), err)
 		}
