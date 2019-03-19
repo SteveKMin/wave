@@ -34,7 +34,7 @@ var _ = Describe("Wave owner references Suite", func() {
 	var c client.Client
 	var h *Handler
 	var m utils.Matcher
-	var deployment *appsv1.Deployment
+	var deploymentObject *appsv1.Deployment
 	var podControllerDeployment podController
 	var mgrStopped *sync.WaitGroup
 	var stopMgr chan struct{}
@@ -72,17 +72,17 @@ var _ = Describe("Wave owner references Suite", func() {
 		m.Create(s2).Should(Succeed())
 		m.Create(s3).Should(Succeed())
 
-		deployment = utils.ExampleDeployment.DeepCopy()
-		podControllerDeployment = &Deployment{deployment}
+		deploymentObject = utils.ExampleDeployment.DeepCopy()
+		podControllerDeployment = &deployment{deploymentObject}
 
-		m.Create(deployment).Should(Succeed())
+		m.Create(deploymentObject).Should(Succeed())
 
-		ownerRef = utils.GetOwnerRef(deployment)
+		ownerRef = utils.GetOwnerRef(deploymentObject)
 
 		stopMgr, mgrStopped = StartTestManager(mgr)
 
 		// Make sure caches have synced
-		m.Get(deployment, timeout).Should(Succeed())
+		m.Get(deploymentObject, timeout).Should(Succeed())
 	})
 
 	AfterEach(func() {
@@ -331,11 +331,11 @@ var _ = Describe("Wave owner references Suite", func() {
 		})
 
 		It("sets the UID", func() {
-			Expect(ref.UID).To(Equal(deployment.UID))
+			Expect(ref.UID).To(Equal(deploymentObject.UID))
 		})
 
 		It("sets the Name", func() {
-			Expect(ref.Name).To(Equal(deployment.Name))
+			Expect(ref.Name).To(Equal(deploymentObject.Name))
 		})
 
 		It("sets Controller to false", func() {

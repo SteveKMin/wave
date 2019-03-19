@@ -63,22 +63,22 @@ type podController interface {
 	DeepCopy() podController
 }
 
-type Deployment struct {
+type deployment struct {
 	*appsv1.Deployment
 }
 
-func (d *Deployment) GetObject() runtime.Object {
+func (d *deployment) GetObject() runtime.Object {
 	return d.Deployment
 }
 
-func (d *Deployment) GetPodTemplate() *corev1.PodTemplateSpec {
+func (d *deployment) GetPodTemplate() *corev1.PodTemplateSpec {
 	return &d.Deployment.Spec.Template
 }
 
-func (d *Deployment) SetPodTemplate(template *corev1.PodTemplateSpec) {
+func (d *deployment) SetPodTemplate(template *corev1.PodTemplateSpec) {
 	d.Deployment.Spec.Template = *template
 }
 
-func (d *Deployment) DeepCopy() podController {
-	return &Deployment{d.Deployment.DeepCopy()}
+func (d *deployment) DeepCopy() podController {
+	return &deployment{d.Deployment.DeepCopy()}
 }

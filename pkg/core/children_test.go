@@ -34,7 +34,7 @@ var _ = Describe("Wave children Suite", func() {
 	var c client.Client
 	var h *Handler
 	var m utils.Matcher
-	var deployment *appsv1.Deployment
+	var deploymentObject *appsv1.Deployment
 	var podControllerDeployment podController
 	var existingChildren []Object
 	var currentChildren []configObject
@@ -78,10 +78,10 @@ var _ = Describe("Wave children Suite", func() {
 		m.Create(s3).Should(Succeed())
 		m.Create(s4).Should(Succeed())
 
-		deployment = utils.ExampleDeployment.DeepCopy()
-		podControllerDeployment = &Deployment{deployment}
+		deploymentObject = utils.ExampleDeployment.DeepCopy()
+		podControllerDeployment = &deployment{deploymentObject}
 
-		m.Create(deployment).Should(Succeed())
+		m.Create(deploymentObject).Should(Succeed())
 
 		stopMgr, mgrStopped = StartTestManager(mgr)
 
@@ -94,7 +94,7 @@ var _ = Describe("Wave children Suite", func() {
 		m.Get(s2, timeout).Should(Succeed())
 		m.Get(s3, timeout).Should(Succeed())
 		m.Get(s4, timeout).Should(Succeed())
-		m.Get(deployment, timeout).Should(Succeed())
+		m.Get(deploymentObject, timeout).Should(Succeed())
 	})
 
 	AfterEach(func() {
@@ -260,8 +260,8 @@ var _ = Describe("Wave children Suite", func() {
 
 	Context("getExistingChildren", func() {
 		BeforeEach(func() {
-			m.Get(deployment, timeout).Should(Succeed())
-			ownerRef := utils.GetOwnerRef(deployment)
+			m.Get(deploymentObject, timeout).Should(Succeed())
+			ownerRef := utils.GetOwnerRef(deploymentObject)
 
 			for _, obj := range []Object{cm1, s1} {
 				m.Get(obj, timeout).Should(Succeed())
@@ -303,26 +303,26 @@ var _ = Describe("Wave children Suite", func() {
 	Context("isOwnedBy", func() {
 		var ownerRef metav1.OwnerReference
 		BeforeEach(func() {
-			m.Get(deployment, timeout).Should(Succeed())
-			ownerRef = utils.GetOwnerRef(deployment)
+			m.Get(deploymentObject, timeout).Should(Succeed())
+			ownerRef = utils.GetOwnerRef(deploymentObject)
 		})
 
 		It("returns true when the child has a single owner reference pointing to the owner", func() {
 			cm1.SetOwnerReferences([]metav1.OwnerReference{ownerRef})
-			Expect(isOwnedBy(cm1, deployment)).To(BeTrue())
+			Expect(isOwnedBy(cm1, deploymentObject)).To(BeTrue())
 		})
 
 		It("returns true when the child has multiple owner references, with one pointing to the owner", func() {
 			otherRef := ownerRef
 			otherRef.UID = cm1.GetUID()
 			cm1.SetOwnerReferences([]metav1.OwnerReference{ownerRef, otherRef})
-			Expect(isOwnedBy(cm1, deployment)).To(BeTrue())
+			Expect(isOwnedBy(cm1, deploymentObject)).To(BeTrue())
 		})
 
 		It("returns false when the child has no owner reference pointing to the owner", func() {
 			ownerRef.UID = cm1.GetUID()
 			cm1.SetOwnerReferences([]metav1.OwnerReference{ownerRef})
-			Expect(isOwnedBy(cm1, deployment)).To(BeFalse())
+			Expect(isOwnedBy(cm1, deploymentObject)).To(BeFalse())
 		})
 	})
 
