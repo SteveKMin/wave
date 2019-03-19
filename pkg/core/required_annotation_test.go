@@ -24,33 +24,33 @@ import (
 )
 
 var _ = Describe("Wave required annotation Suite", func() {
-	var deployment *appsv1.Deployment
+	var deploymentObject *appsv1.Deployment
 	var podControllerDeployment podController
 
 	BeforeEach(func() {
-		deployment = utils.ExampleDeployment.DeepCopy()
-		podControllerDeployment = &Deployment{deployment}
+		deploymentObject = utils.ExampleDeployment.DeepCopy()
+		podControllerDeployment = &deployment{deploymentObject}
 	})
 
 	Context("hasRequiredAnnotation", func() {
 		It("returns true when the annotation has value true", func() {
-			annotations := deployment.GetAnnotations()
+			annotations := deploymentObject.GetAnnotations()
 			if annotations == nil {
 				annotations = make(map[string]string)
 			}
 			annotations[RequiredAnnotation] = "true"
-			deployment.SetAnnotations(annotations)
+			deploymentObject.SetAnnotations(annotations)
 
 			Expect(hasRequiredAnnotation(podControllerDeployment)).To(BeTrue())
 		})
 
 		It("returns false when the annotation has value other than true", func() {
-			annotations := deployment.GetAnnotations()
+			annotations := deploymentObject.GetAnnotations()
 			if annotations == nil {
 				annotations = make(map[string]string)
 			}
 			annotations[RequiredAnnotation] = "false"
-			deployment.SetAnnotations(annotations)
+			deploymentObject.SetAnnotations(annotations)
 
 			Expect(hasRequiredAnnotation(podControllerDeployment)).To(BeFalse())
 		})

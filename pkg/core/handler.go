@@ -41,7 +41,7 @@ func NewHandler(c client.Client, r record.EventRecorder) *Handler {
 }
 
 func (h *Handler) HandleDeployment(instance *appsv1.Deployment) (reconcile.Result, error) {
-	return h.HandlePodController(&Deployment{Deployment: instance})
+	return h.HandlePodController(&deployment{Deployment: instance})
 }
 
 // HandlePodController is called by the deployment controller
