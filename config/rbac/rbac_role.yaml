@@ -79,3 +79,15 @@ rules:
   - update
   - patch
   - delete
+- apiGroups:
+    - ""
+  resources:
+    - statefulsets
+  verbs:
+    - get
+    - list
+    - watch
+    - create
+    - update
+    - patch
+    - delete

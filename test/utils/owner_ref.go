@@ -34,3 +34,16 @@ func GetOwnerRef(deployment *appsv1.Deployment) metav1.OwnerReference {
 		BlockOwnerDeletion: &t,
 	}
 }
+
+func GetOwnerRefStatefulSet(sts *appsv1.StatefulSet) metav1.OwnerReference {
+	f := false
+	t := true
+	return metav1.OwnerReference{
+		APIVersion:         "apps/v1",
+		Kind:               "StatefulSet",
+		Name:               sts.Name,
+		UID:                sts.UID,
+		Controller:         &f,
+		BlockOwnerDeletion: &t,
+	}
+}
