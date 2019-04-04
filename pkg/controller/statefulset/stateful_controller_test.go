@@ -94,7 +94,7 @@ var _ = Describe("StatefulSet controller Suite", func() {
 	})
 
 	AfterEach(func() {
-		// Make sure to delete any finalizers (if the deployment exists)
+		// Make sure to delete any finalizers (if the statefulset exists)
 		Eventually(func() error {
 			key := types.NamespacedName{Namespace: sts.GetNamespace(), Name: sts.GetName()}
 			err := c.Get(context.TODO(), key, sts)
@@ -127,14 +127,14 @@ var _ = Describe("StatefulSet controller Suite", func() {
 		mgrStopped.Wait()
 
 		utils.DeleteAll(cfg, timeout,
-			&appsv1.DeploymentList{},
+			&appsv1.StatefulSetList{},
 			&corev1.ConfigMapList{},
 			&corev1.SecretList{},
 			&corev1.EventList{},
 		)
 	})
 
-	Context("When a Deployment is reconciled", func() {
+	Context("When a StatefulSet is reconciled", func() {
 		Context("And it has the required annotation", func() {
 			BeforeEach(func() {
 				annotations := sts.GetAnnotations()
@@ -147,7 +147,7 @@ var _ = Describe("StatefulSet controller Suite", func() {
 				m.Update(sts).Should(Succeed())
 				waitForStatefulSetReconciled(sts)
 
-				// Get the updated Deployment
+				// Get the updated StatefulSet
 				m.Get(sts, timeout).Should(Succeed())
 			})
 
@@ -157,7 +157,7 @@ var _ = Describe("StatefulSet controller Suite", func() {
 				}
 			})
 
-			It("Adds a finalizer to the Deployment", func() {
+			It("Adds a finalizer to the StatefulSet", func() {
 				m.Eventually(sts, timeout).Should(utils.WithFinalizers(ContainElement(core.FinalizerString)))
 			})
 
@@ -191,7 +191,7 @@ var _ = Describe("StatefulSet controller Suite", func() {
 					m.Update(sts).Should(Succeed())
 					waitForStatefulSetReconciled(sts)
 
-					// Get the updated Deployment
+					// Get the updated StatefulSet
 					m.Get(sts, timeout).Should(Succeed())
 				})
 
@@ -224,7 +224,7 @@ var _ = Describe("StatefulSet controller Suite", func() {
 
 						waitForStatefulSetReconciled(sts)
 
-						// Get the updated Deployment
+						// Get the updated StatefulSet
 						m.Get(sts, timeout).Should(Succeed())
 					})
 
@@ -241,7 +241,7 @@ var _ = Describe("StatefulSet controller Suite", func() {
 
 						waitForStatefulSetReconciled(sts)
 
-						// Get the updated Deployment
+						// Get the updated StatefulSet
 						m.Get(sts, timeout).Should(Succeed())
 					})
 
@@ -261,7 +261,7 @@ var _ = Describe("StatefulSet controller Suite", func() {
 
 						waitForStatefulSetReconciled(sts)
 
-						// Get the updated Deployment
+						// Get the updated StatefulSet
 						m.Get(sts, timeout).Should(Succeed())
 					})
 
@@ -281,7 +281,7 @@ var _ = Describe("StatefulSet controller Suite", func() {
 
 						waitForStatefulSetReconciled(sts)
 
-						// Get the updated Deployment
+						// Get the updated StatefulSet
 						m.Get(sts, timeout).Should(Succeed())
 					})
 
@@ -307,7 +307,7 @@ var _ = Describe("StatefulSet controller Suite", func() {
 					}
 				})
 
-				It("Removes the Deployment's finalizer", func() {
+				It("Removes the StatefulSet's finalizer", func() {
 					m.Eventually(sts, timeout).ShouldNot(utils.WithFinalizers(ContainElement(core.FinalizerString)))
 				})
 			})
@@ -320,7 +320,7 @@ var _ = Describe("StatefulSet controller Suite", func() {
 					m.Eventually(sts, timeout).ShouldNot(utils.WithDeletionTimestamp(BeNil()))
 					waitForStatefulSetReconciled(sts)
 
-					// Get the updated Deployment
+					// Get the updated StatefulSet
 					m.Get(sts, timeout).Should(Succeed())
 				})
 				It("Removes the OwnerReference from the all children", func() {
@@ -329,8 +329,8 @@ var _ = Describe("StatefulSet controller Suite", func() {
 					}
 				})
 
-				It("Removes the Deployment's finalizer", func() {
-					// Removing the finalizer causes the deployment to be deleted
+				It("Removes the StatefulSet's finalizer", func() {
+					// Removing the finalizer causes the statefulset to be deleted
 					m.Get(sts, timeout).ShouldNot(Succeed())
 				})
 			})
@@ -338,7 +338,7 @@ var _ = Describe("StatefulSet controller Suite", func() {
 
 		Context("And it does not have the required annotation", func() {
 			BeforeEach(func() {
-				// Get the updated Deployment
+				// Get the updated StatefulSet
 				m.Get(sts, timeout).Should(Succeed())
 			})
 
@@ -348,7 +348,7 @@ var _ = Describe("StatefulSet controller Suite", func() {
 				}
 			})
 
-			It("Doesn't add a finalizer to the Deployment", func() {
+			It("Doesn't add a finalizer to the StatefulSet", func() {
 				m.Consistently(sts, consistentlyTimeout).ShouldNot(utils.WithFinalizers(ContainElement(core.FinalizerString)))
 			})
 

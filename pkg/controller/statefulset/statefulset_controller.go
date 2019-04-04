@@ -15,7 +15,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-// Add creates a new Deployment Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
+// Add creates a new StatefulSet Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
 	return add(mgr, newReconciler(mgr))
@@ -66,15 +66,15 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 var _ reconcile.Reconciler = &ReconcileStatefulSet{}
 
-// ReconcileDeployment reconciles a StatefulSet object
+// ReconcileStatefulSet reconciles a StatefulSet object
 type ReconcileStatefulSet struct {
 	scheme  *runtime.Scheme
 	handler *core.Handler
 }
 
-// Reconcile reads that state of the cluster for a Deployment object and
+// Reconcile reads that state of the cluster for a StatefulSet object and
 // updates its PodSpec based on mounted configuration
-// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;update;patch
+// +kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups=,resources=configmaps,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups=,resources=secrets,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups=,resources=events,verbs=create;update;patch
