@@ -22,6 +22,8 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/pusher/wave/test/reporters"
+
 	"github.com/go-logr/glogr"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -38,7 +40,7 @@ var cfg *rest.Config
 
 func TestMain(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Wave Controller Suite")
+	RunSpecsWithDefaultAndCustomReporters(t, "Wave Controller Suite", reporters.Reporters())
 }
 
 var t *envtest.Environment

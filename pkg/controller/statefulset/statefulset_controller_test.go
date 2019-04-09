@@ -1,3 +1,19 @@
+/*
+Copyright 2018 Pusher Ltd.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package statefulset
 
 import (
@@ -24,7 +40,7 @@ var _ = Describe("StatefulSet controller Suite", func() {
 	var c client.Client
 	var m utils.Matcher
 
-	var sts *appsv1.StatefulSet
+	var statefulset *appsv1.StatefulSet
 	var requests <-chan reconcile.Request
 	var mgrStopped *sync.WaitGroup
 	var stopMgr chan struct{}
@@ -84,40 +100,40 @@ var _ = Describe("StatefulSet controller Suite", func() {
 		m.Get(s2, timeout).Should(Succeed())
 		m.Get(s3, timeout).Should(Succeed())
 
-		sts = utils.ExampleStatefulSet.DeepCopy()
+		statefulset = utils.ExampleStatefulSet.DeepCopy()
 
 		// Create a statefulset and wait for it to be reconciled
-		m.Create(sts).Should(Succeed())
-		waitForStatefulSetReconciled(sts)
+		m.Create(statefulset).Should(Succeed())
+		waitForStatefulSetReconciled(statefulset)
 
-		ownerRef = utils.GetOwnerRefStatefulSet(sts)
+		ownerRef = utils.GetOwnerRefStatefulSet(statefulset)
 	})
 
 	AfterEach(func() {
 		// Make sure to delete any finalizers (if the statefulset exists)
 		Eventually(func() error {
-			key := types.NamespacedName{Namespace: sts.GetNamespace(), Name: sts.GetName()}
-			err := c.Get(context.TODO(), key, sts)
+			key := types.NamespacedName{Namespace: statefulset.GetNamespace(), Name: statefulset.GetName()}
+			err := c.Get(context.TODO(), key, statefulset)
 			if err != nil && errors.IsNotFound(err) {
 				return nil
 			}
 			if err != nil {
 				return err
 			}
-			sts.SetFinalizers([]string{})
-			return c.Update(context.TODO(), sts)
+			statefulset.SetFinalizers([]string{})
+			return c.Update(context.TODO(), statefulset)
 		}, timeout).Should(Succeed())
 
 		Eventually(func() error {
-			key := types.NamespacedName{Namespace: sts.GetNamespace(), Name: sts.GetName()}
-			err := c.Get(context.TODO(), key, sts)
+			key := types.NamespacedName{Namespace: statefulset.GetNamespace(), Name: statefulset.GetName()}
+			err := c.Get(context.TODO(), key, statefulset)
 			if err != nil && errors.IsNotFound(err) {
 				return nil
 			}
 			if err != nil {
 				return err
 			}
-			if len(sts.GetFinalizers()) > 0 {
+			if len(statefulset.GetFinalizers()) > 0 {
 				return fmt.Errorf("Finalizers not upated")
 			}
 			return nil
@@ -137,18 +153,18 @@ var _ = Describe("StatefulSet controller Suite", func() {
 	Context("When a StatefulSet is reconciled", func() {
 		Context("And it has the required annotation", func() {
 			BeforeEach(func() {
-				annotations := sts.GetAnnotations()
+				annotations := statefulset.GetAnnotations()
 				if annotations == nil {
 					annotations = make(map[string]string)
 				}
 				annotations[core.RequiredAnnotation] = "true"
-				sts.SetAnnotations(annotations)
+				statefulset.SetAnnotations(annotations)
 
-				m.Update(sts).Should(Succeed())
-				waitForStatefulSetReconciled(sts)
+				m.Update(statefulset).Should(Succeed())
+				waitForStatefulSetReconciled(statefulset)
 
 				// Get the updated StatefulSet
-				m.Get(sts, timeout).Should(Succeed())
+				m.Get(statefulset, timeout).Should(Succeed())
 			})
 
 			It("Adds OwnerReferences to all children", func() {
@@ -158,15 +174,15 @@ var _ = Describe("StatefulSet controller Suite", func() {
 			})
 
 			It("Adds a finalizer to the StatefulSet", func() {
-				m.Eventually(sts, timeout).Should(utils.WithFinalizers(ContainElement(core.FinalizerString)))
+				m.Eventually(statefulset, timeout).Should(utils.WithFinalizers(ContainElement(core.FinalizerString)))
 			})
 
 			It("Adds a config hash to the Pod Template", func() {
-				m.Eventually(sts, timeout).Should(utils.WithPodTemplateAnnotations(HaveKey(core.ConfigHashAnnotation)))
+				m.Eventually(statefulset, timeout).Should(utils.WithPodTemplateAnnotations(HaveKey(core.ConfigHashAnnotation)))
 			})
 
 			It("Sends an event when updating the hash", func() {
-				m.Eventually(sts, timeout).Should(utils.WithPodTemplateAnnotations(HaveKey(core.ConfigHashAnnotation)))
+				m.Eventually(statefulset, timeout).Should(utils.WithPodTemplateAnnotations(HaveKey(core.ConfigHashAnnotation)))
 
 				events := &corev1.EventList{}
 				eventMessage := func(event *corev1.Event) string {
@@ -180,19 +196,19 @@ var _ = Describe("StatefulSet controller Suite", func() {
 			Context("And a child is removed", func() {
 				var originalHash string
 				BeforeEach(func() {
-					m.Eventually(sts, timeout).Should(utils.WithPodTemplateAnnotations(HaveKey(core.ConfigHashAnnotation)))
-					originalHash = sts.Spec.Template.GetAnnotations()[core.ConfigHashAnnotation]
+					m.Eventually(statefulset, timeout).Should(utils.WithPodTemplateAnnotations(HaveKey(core.ConfigHashAnnotation)))
+					originalHash = statefulset.Spec.Template.GetAnnotations()[core.ConfigHashAnnotation]
 
 					// Remove "container2" which references Secret example2 and ConfigMap
 					// example2
-					containers := sts.Spec.Template.Spec.Containers
+					containers := statefulset.Spec.Template.Spec.Containers
 					Expect(containers[0].Name).To(Equal("container1"))
-					sts.Spec.Template.Spec.Containers = []corev1.Container{containers[0]}
-					m.Update(sts).Should(Succeed())
-					waitForStatefulSetReconciled(sts)
+					statefulset.Spec.Template.Spec.Containers = []corev1.Container{containers[0]}
+					m.Update(statefulset).Should(Succeed())
+					waitForStatefulSetReconciled(statefulset)
 
 					// Get the updated StatefulSet
-					m.Get(sts, timeout).Should(Succeed())
+					m.Get(statefulset, timeout).Should(Succeed())
 				})
 
 				It("Removes the OwnerReference from the orphaned ConfigMap", func() {
@@ -204,7 +220,7 @@ var _ = Describe("StatefulSet controller Suite", func() {
 				})
 
 				It("Updates the config hash in the Pod Template", func() {
-					m.Eventually(sts, timeout).ShouldNot(utils.WithPodTemplateAnnotations(HaveKeyWithValue(core.ConfigHashAnnotation, originalHash)))
+					m.Eventually(statefulset, timeout).ShouldNot(utils.WithPodTemplateAnnotations(HaveKeyWithValue(core.ConfigHashAnnotation, originalHash)))
 				})
 			})
 
@@ -212,8 +228,8 @@ var _ = Describe("StatefulSet controller Suite", func() {
 				var originalHash string
 
 				BeforeEach(func() {
-					m.Eventually(sts, timeout).Should(utils.WithPodTemplateAnnotations(HaveKey(core.ConfigHashAnnotation)))
-					originalHash = sts.Spec.Template.GetAnnotations()[core.ConfigHashAnnotation]
+					m.Eventually(statefulset, timeout).Should(utils.WithPodTemplateAnnotations(HaveKey(core.ConfigHashAnnotation)))
+					originalHash = statefulset.Spec.Template.GetAnnotations()[core.ConfigHashAnnotation]
 				})
 
 				Context("A ConfigMap volume is updated", func() {
@@ -222,14 +238,14 @@ var _ = Describe("StatefulSet controller Suite", func() {
 						cm1.Data["key1"] = "modified"
 						m.Update(cm1).Should(Succeed())
 
-						waitForStatefulSetReconciled(sts)
+						waitForStatefulSetReconciled(statefulset)
 
 						// Get the updated StatefulSet
-						m.Get(sts, timeout).Should(Succeed())
+						m.Get(statefulset, timeout).Should(Succeed())
 					})
 
 					It("Updates the config hash in the Pod Template", func() {
-						m.Eventually(sts, timeout).ShouldNot(utils.WithAnnotations(HaveKeyWithValue(core.ConfigHashAnnotation, originalHash)))
+						m.Eventually(statefulset, timeout).ShouldNot(utils.WithAnnotations(HaveKeyWithValue(core.ConfigHashAnnotation, originalHash)))
 					})
 				})
 
@@ -239,14 +255,14 @@ var _ = Describe("StatefulSet controller Suite", func() {
 						cm2.Data["key1"] = "modified"
 						m.Update(cm2).Should(Succeed())
 
-						waitForStatefulSetReconciled(sts)
+						waitForStatefulSetReconciled(statefulset)
 
 						// Get the updated StatefulSet
-						m.Get(sts, timeout).Should(Succeed())
+						m.Get(statefulset, timeout).Should(Succeed())
 					})
 
 					It("Updates the config hash in the Pod Template", func() {
-						m.Eventually(sts, timeout).ShouldNot(utils.WithAnnotations(HaveKeyWithValue(core.ConfigHashAnnotation, originalHash)))
+						m.Eventually(statefulset, timeout).ShouldNot(utils.WithAnnotations(HaveKeyWithValue(core.ConfigHashAnnotation, originalHash)))
 					})
 				})
 
@@ -259,14 +275,14 @@ var _ = Describe("StatefulSet controller Suite", func() {
 						s1.StringData["key1"] = "modified"
 						m.Update(s1).Should(Succeed())
 
-						waitForStatefulSetReconciled(sts)
+						waitForStatefulSetReconciled(statefulset)
 
 						// Get the updated StatefulSet
-						m.Get(sts, timeout).Should(Succeed())
+						m.Get(statefulset, timeout).Should(Succeed())
 					})
 
 					It("Updates the config hash in the Pod Template", func() {
-						m.Eventually(sts, timeout).ShouldNot(utils.WithAnnotations(HaveKeyWithValue(core.ConfigHashAnnotation, originalHash)))
+						m.Eventually(statefulset, timeout).ShouldNot(utils.WithAnnotations(HaveKeyWithValue(core.ConfigHashAnnotation, originalHash)))
 					})
 				})
 
@@ -279,26 +295,26 @@ var _ = Describe("StatefulSet controller Suite", func() {
 						s2.StringData["key1"] = "modified"
 						m.Update(s2).Should(Succeed())
 
-						waitForStatefulSetReconciled(sts)
+						waitForStatefulSetReconciled(statefulset)
 
 						// Get the updated StatefulSet
-						m.Get(sts, timeout).Should(Succeed())
+						m.Get(statefulset, timeout).Should(Succeed())
 					})
 
 					It("Updates the config hash in the Pod Template", func() {
-						m.Eventually(sts, timeout).ShouldNot(utils.WithAnnotations(HaveKeyWithValue(core.ConfigHashAnnotation, originalHash)))
+						m.Eventually(statefulset, timeout).ShouldNot(utils.WithAnnotations(HaveKeyWithValue(core.ConfigHashAnnotation, originalHash)))
 					})
 				})
 			})
 
 			Context("And the annotation is removed", func() {
 				BeforeEach(func() {
-					m.Get(sts, timeout).Should(Succeed())
-					sts.SetAnnotations(make(map[string]string))
-					m.Update(sts).Should(Succeed())
-					waitForStatefulSetReconciled(sts)
+					m.Get(statefulset, timeout).Should(Succeed())
+					statefulset.SetAnnotations(make(map[string]string))
+					m.Update(statefulset).Should(Succeed())
+					waitForStatefulSetReconciled(statefulset)
 
-					m.Eventually(sts, timeout).ShouldNot(utils.WithAnnotations(HaveKey(core.RequiredAnnotation)))
+					m.Eventually(statefulset, timeout).ShouldNot(utils.WithAnnotations(HaveKey(core.RequiredAnnotation)))
 				})
 
 				It("Removes the OwnerReference from the all children", func() {
@@ -308,20 +324,20 @@ var _ = Describe("StatefulSet controller Suite", func() {
 				})
 
 				It("Removes the StatefulSet's finalizer", func() {
-					m.Eventually(sts, timeout).ShouldNot(utils.WithFinalizers(ContainElement(core.FinalizerString)))
+					m.Eventually(statefulset, timeout).ShouldNot(utils.WithFinalizers(ContainElement(core.FinalizerString)))
 				})
 			})
 
 			Context("And is deleted", func() {
 				BeforeEach(func() {
 					// Make sure the cache has synced before we run the test
-					m.Eventually(sts, timeout).Should(utils.WithPodTemplateAnnotations(HaveKey(core.ConfigHashAnnotation)))
-					m.Delete(sts).Should(Succeed())
-					m.Eventually(sts, timeout).ShouldNot(utils.WithDeletionTimestamp(BeNil()))
-					waitForStatefulSetReconciled(sts)
+					m.Eventually(statefulset, timeout).Should(utils.WithPodTemplateAnnotations(HaveKey(core.ConfigHashAnnotation)))
+					m.Delete(statefulset).Should(Succeed())
+					m.Eventually(statefulset, timeout).ShouldNot(utils.WithDeletionTimestamp(BeNil()))
+					waitForStatefulSetReconciled(statefulset)
 
 					// Get the updated StatefulSet
-					m.Get(sts, timeout).Should(Succeed())
+					m.Get(statefulset, timeout).Should(Succeed())
 				})
 				It("Removes the OwnerReference from the all children", func() {
 					for _, obj := range []core.Object{cm1, cm2, s1, s2} {
@@ -331,7 +347,7 @@ var _ = Describe("StatefulSet controller Suite", func() {
 
 				It("Removes the StatefulSet's finalizer", func() {
 					// Removing the finalizer causes the statefulset to be deleted
-					m.Get(sts, timeout).ShouldNot(Succeed())
+					m.Get(statefulset, timeout).ShouldNot(Succeed())
 				})
 			})
 		})
@@ -339,7 +355,7 @@ var _ = Describe("StatefulSet controller Suite", func() {
 		Context("And it does not have the required annotation", func() {
 			BeforeEach(func() {
 				// Get the updated StatefulSet
-				m.Get(sts, timeout).Should(Succeed())
+				m.Get(statefulset, timeout).Should(Succeed())
 			})
 
 			It("Doesn't add any OwnerReferences to any children", func() {
@@ -349,11 +365,11 @@ var _ = Describe("StatefulSet controller Suite", func() {
 			})
 
 			It("Doesn't add a finalizer to the StatefulSet", func() {
-				m.Consistently(sts, consistentlyTimeout).ShouldNot(utils.WithFinalizers(ContainElement(core.FinalizerString)))
+				m.Consistently(statefulset, consistentlyTimeout).ShouldNot(utils.WithFinalizers(ContainElement(core.FinalizerString)))
 			})
 
 			It("Doesn't add a config hash to the Pod Template", func() {
-				m.Consistently(sts, consistentlyTimeout).ShouldNot(utils.WithAnnotations(ContainElement(core.ConfigHashAnnotation)))
+				m.Consistently(statefulset, consistentlyTimeout).ShouldNot(utils.WithAnnotations(ContainElement(core.ConfigHashAnnotation)))
 			})
 		})
 	})
