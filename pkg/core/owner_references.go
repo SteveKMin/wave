@@ -123,13 +123,25 @@ func getOrphans(existing []Object, current []configObject) []Object {
 func getOwnerReference(obj podController) metav1.OwnerReference {
 	t := true
 	f := false
-	return metav1.OwnerReference{
-		APIVersion:         "apps/v1",
-		Kind:               "Deployment",
-		Name:               obj.GetName(),
-		UID:                obj.GetUID(),
-		BlockOwnerDeletion: &t,
-		Controller:         &f,
+	switch kindOf(obj) {
+	case "Deployment":
+		return metav1.OwnerReference{
+			APIVersion:         "apps/v1",
+			Kind:               "Deployment",
+			Name:               obj.GetName(),
+			UID:                obj.GetUID(),
+			BlockOwnerDeletion: &t,
+			Controller:         &f,
+		}
+	default:
+		return metav1.OwnerReference{
+			APIVersion:         "apps/v1",
+			Kind:               "StatefulSet",
+			Name:               obj.GetName(),
+			UID:                obj.GetUID(),
+			BlockOwnerDeletion: &t,
+			Controller:         &f,
+		}
 	}
 }
 
@@ -150,6 +162,10 @@ func kindOf(obj Object) string {
 		return "ConfigMap"
 	case *corev1.Secret:
 		return "Secret"
+	case *deployment:
+		return "Deployment"
+	case *statefulset:
+		return "StatefulSet"
 	default:
 		return "Unknown"
 	}
