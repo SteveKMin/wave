@@ -170,15 +170,14 @@ func WithOwnerReferences(matcher gtypes.GomegaMatcher) gtypes.GomegaMatcher {
 // WithPodTemplateAnnotations returns the PodTemplate's annotations
 func WithPodTemplateAnnotations(matcher gtypes.GomegaMatcher) gtypes.GomegaMatcher {
 	return gomega.WithTransform(func(obj Object) map[string]string {
-		dep, ok := obj.(*appsv1.Deployment)
-		if !ok {
-			sts, ok := obj.(*appsv1.StatefulSet)
-			if !ok {
-				panic("Unknown Object.")
-			}
-			return sts.Spec.Template.GetAnnotations()
+		switch obj.(type) {
+		case *appsv1.Deployment:
+			return obj.(*appsv1.Deployment).Spec.Template.GetAnnotations()
+		case *appsv1.StatefulSet:
+			return obj.(*appsv1.StatefulSet).Spec.Template.GetAnnotations()
+		default:
+			panic("Unknown pod template type.")
 		}
-		return dep.Spec.Template.GetAnnotations()
 	}, matcher)
 }
 
